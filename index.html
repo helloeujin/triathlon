@@ -668,8 +668,9 @@
         const ML_WIDE = 46,
           ML_NARROW = 4;
 
-        const Y_MAX = 100;
-        const yTicks = [0, 25, 50, 75, 100];
+        const maxVal = d3.max(names, (n) => d3.max(EVENTS, (ev) => totals[n][ev])) || 0;
+        const Y_MAX = Math.max(25, Math.ceil(maxVal / 25) * 25);
+        const yTicks = d3.range(0, Y_MAX + 1, 25);
         const yScale = d3
           .scaleLinear()
           .domain([0, Y_MAX])
