@@ -1,540 +1,890 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>철인 3종 훈련 기록</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>철인 3종 훈련 기록</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-  :root {
-    --bg: #f4f2ee;
-    --surface: #ffffff;
-    --border: #d6d3cc;
-    --text: #1a1916;
-    --muted: #6e6b63;
-    --run: #d4e8f8;
-    --run-text: #0a3d72;
-    --swim: #fdefd4;
-    --swim-text: #7a4a00;
-    --cycle: #d4f0e8;
-    --cycle-text: #0a5c42;
-    --mono: 'DM Mono', monospace;
-    --sans: 'Noto Sans KR', sans-serif;
-  }
+      :root {
+        --bg: #f4f2ee;
+        --surface: #ffffff;
+        --border: #d6d3cc;
+        --text: #1a1916;
+        --muted: #6e6b63;
+        --run: #d4e8f8;
+        --run-text: #0a3d72;
+        --swim: #fdefd4;
+        --swim-text: #7a4a00;
+        --cycle: #d4f0e8;
+        --cycle-text: #0a5c42;
+        --mono: "DM Mono", monospace;
+        --sans: "Noto Sans KR", sans-serif;
+      }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
-    padding: 3rem 1.5rem;
-  }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        min-height: 100vh;
+        padding: 3rem 1.5rem;
+      }
 
-  header {
-    max-width: 760px;
-    margin: 0 auto 3rem;
-    border-bottom: 1.5px solid var(--text);
-    padding-bottom: 1.5rem;
-  }
+      header {
+        max-width: 760px;
+        margin: 0 auto 3rem;
+        border-bottom: 1.5px solid var(--text);
+        padding-bottom: 1.5rem;
+      }
 
-  header p.eyebrow {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 0.5rem;
-  }
+      header p.eyebrow {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 0.5rem;
+      }
 
-  header h1 {
-    font-size: clamp(28px, 5vw, 42px);
-    font-weight: 700;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-  }
+      header h1 {
+        font-size: clamp(28px, 5vw, 42px);
+        font-weight: 700;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+      }
 
-  .container { max-width: 760px; margin: 0 auto; }
+      .container {
+        max-width: 760px;
+        margin: 0 auto;
+      }
 
-  .month-tabs {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 2rem;
-  }
+      .month-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+      }
 
-  .month-tab {
-    height: 34px;
-    padding: 0 16px;
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    background: var(--surface);
-    color: var(--muted);
-    font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: 0.05em;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
+      .month-tab {
+        height: 34px;
+        padding: 0 16px;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        background: var(--surface);
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
 
-  .month-tab:hover { border-color: var(--text); color: var(--text); }
-  .month-tab.active { background: var(--text); border-color: var(--text); color: #fff; }
+      .month-tab:hover {
+        border-color: var(--text);
+        color: var(--text);
+      }
+      .month-tab.active {
+        background: var(--text);
+        border-color: var(--text);
+        color: #fff;
+      }
 
-  .filters {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 2rem;
-    align-items: flex-end;
-  }
+      .filters {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+        align-items: flex-end;
+      }
 
-  .filter-group { display: flex; flex-direction: column; gap: 5px; }
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
 
-  .filter-group label {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
+      .filter-group label {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
 
-  select, input[type="date"] {
-    height: 38px;
-    padding: 0 12px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    background: var(--surface);
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 14px;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236e6b63' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    padding-right: 30px;
-    min-width: 130px;
-    cursor: pointer;
-    transition: border-color 0.15s;
-  }
+      select,
+      input[type="date"] {
+        height: 38px;
+        padding: 0 12px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: var(--surface);
+        color: var(--text);
+        font-family: var(--sans);
+        font-size: 14px;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236e6b63' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        padding-right: 30px;
+        min-width: 130px;
+        cursor: pointer;
+        transition: border-color 0.15s;
+      }
 
-  input[type="date"] { background-image: none; padding-right: 12px; }
-  select:hover, input[type="date"]:hover { border-color: var(--text); }
-  select:focus, input[type="date"]:focus { outline: none; border-color: var(--text); box-shadow: 0 0 0 2px rgba(26,25,22,0.1); }
+      input[type="date"] {
+        background-image: none;
+        padding-right: 12px;
+      }
+      select:hover,
+      input[type="date"]:hover {
+        border-color: var(--text);
+      }
+      select:focus,
+      input[type="date"]:focus {
+        outline: none;
+        border-color: var(--text);
+        box-shadow: 0 0 0 2px rgba(26, 25, 22, 0.1);
+      }
 
-  .reset-btn {
-    height: 38px;
-    padding: 0 16px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    background: transparent;
-    color: var(--muted);
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
+      .reset-btn {
+        height: 38px;
+        padding: 0 16px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: transparent;
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
 
-  .reset-btn:hover { border-color: var(--text); color: var(--text); }
+      .reset-btn:hover {
+        border-color: var(--text);
+        color: var(--text);
+      }
 
-  .summary {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 2rem;
-  }
+      .summary {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 2rem;
+      }
 
-  .stat {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 1rem 1.25rem;
-  }
+      .stat {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 1rem 1.25rem;
+      }
 
-  .stat-label {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
+      .stat-label {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
 
-  .stat-value {
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-  }
+      .stat-value {
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
 
-  .chart-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 2rem;
-  }
+      .chart-wrap {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 2rem;
+      }
 
-  .chart-title {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 1rem;
-  }
+      .chart-title {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 1rem;
+      }
 
-  .chart-wrap canvas { max-height: 240px; }
+      .chart-legend {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
 
-  .table-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    overflow: hidden;
-  }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 10px;
+      }
 
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
+        flex-shrink: 0;
+      }
 
-  thead th {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    text-align: left;
-    padding: 10px 16px;
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-    font-weight: 400;
-  }
+      .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
 
-  thead th:last-child { text-align: right; }
+      .athlete-chart-wrap {
+        min-width: 0;
+      }
 
-  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
-  tbody tr:last-child { border-bottom: none; }
-  tbody tr:hover { background: var(--bg); }
-  tbody td { padding: 13px 16px; color: var(--text); }
-  tbody td:last-child { text-align: right; font-family: var(--mono); font-weight: 500; }
+      .athlete-chart-wrap svg {
+        display: block;
+        width: 100%;
+        overflow: visible;
+      }
 
-  td.date-cell { font-family: var(--mono); font-size: 13px; color: var(--muted); }
-  td.name-cell { font-weight: 500; }
+      .athlete-name {
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text);
+        text-align: center;
+        margin-top: 6px;
+      }
 
-  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
-  .badge-run   { background: var(--run);   color: var(--run-text); }
-  .badge-swim  { background: var(--swim);  color: var(--swim-text); }
-  .badge-cycle { background: var(--cycle); color: var(--cycle-text); }
-
-  .empty-row td { text-align: center; padding: 3rem; color: var(--muted); font-family: var(--mono); font-size: 13px; }
-
-  #status { text-align: center; padding: 3rem; font-family: var(--mono); font-size: 13px; color: var(--muted); }
-  .error { color: #a32d2d; }
-
-  footer {
-    max-width: 760px;
-    margin: 2rem auto 0;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .refresh-btn {
-    background: none; border: none; color: var(--muted);
-    font-family: var(--mono); font-size: 11px; cursor: pointer;
-    text-decoration: underline; text-underline-offset: 3px;
-  }
-
-  .refresh-btn:hover { color: var(--text); }
-
-  @media (max-width: 520px) {
-    .summary { grid-template-columns: repeat(2, 1fr); }
-    .filters { flex-direction: column; align-items: stretch; }
-    select, input[type="date"] { min-width: unset; width: 100%; }
-  }
-</style>
-</head>
-<body>
-
-<header>
-  <p class="eyebrow">Training Log</p>
-  <h1>철인 3종 훈련 기록</h1>
-</header>
-
-<div class="container">
-  <div class="month-tabs" id="monthTabs"></div>
-
-  <div class="filters" style="display:none">
-    <div class="filter-group">
-      <label>날짜</label>
-      <input type="date" id="dateFilter" />
-    </div>
-    <div class="filter-group">
-      <label>종목</label>
-      <select id="eventFilter">
-        <option value="">전체 종목</option>
-        <option value="러닝">러닝</option>
-        <option value="수영">수영</option>
-        <option value="사이클">사이클</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <label>이름</label>
-      <select id="nameFilter">
-        <option value="">전체 선수</option>
-      </select>
-    </div>
-    <div class="filter-group" style="justify-content:flex-end">
-      <label style="visibility:hidden">_</label>
-      <button class="reset-btn" onclick="resetFilters()">초기화</button>
-    </div>
-  </div>
-
-  <div class="summary">
-    <div class="stat"><div class="stat-label">결과</div><div class="stat-value" id="countStat">—</div></div>
-    <div class="stat"><div class="stat-label">총 거리</div><div class="stat-value" id="kmStat">—</div></div>
-    <div class="stat"><div class="stat-label">참여 선수</div><div class="stat-value" id="peopleStat">—</div></div>
-  </div>
-
-  <div class="chart-wrap" id="chartWrap" style="display:none">
-    <div class="chart-title" id="chartTitle"></div>
-    <canvas id="myChart"></canvas>
-  </div>
-
-  <div id="status">데이터 불러오는 중...</div>
-
-  <div class="table-wrap" id="tableWrap" style="display:none">
-    <table>
-      <thead>
-        <tr>
-          <th>날짜</th><th>이름</th><th>종목</th><th>거리 (km)</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </div>
-</div>
-
-<footer>
-  <span id="last-updated"></span>
-  <button class="refresh-btn" onclick="loadData()">↻ 새로고침</button>
-</footer>
-
-<script>
-const SHEET_ID = "1r2EkFYMBs757KpigAcIUFo_tXo65pINyutEdxG_OylM";
-const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
-
-const badgeClass = { 러닝: "badge-run", 수영: "badge-swim", 사이클: "badge-cycle" };
-const EVENTS = ["러닝", "수영", "사이클"];
-const CHART_COLORS = {
-  러닝:   { bg: "#378ADD", border: "#185FA5" },
-  수영:   { bg: "#EF9F27", border: "#BA7517" },
-  사이클: { bg: "#1D9E75", border: "#0F6E56" },
-};
-
-let allData = [];
-let chartInstance = null;
-let activeMonth = null;
-
-function parseCSV(text) {
-  const lines = text.trim().split("\n");
-  const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, ""));
-  return lines.slice(1).map(line => {
-    const cols = line.match(/(".*?"|[^,]+)(?=,|$)/g) || [];
-    const row = {};
-    headers.forEach((h, i) => { row[h] = (cols[i] || "").trim().replace(/^"|"$/g, ""); });
-    return row;
-  }).filter(r => r["날짜"] && r["이름"] && r["종목"]);
-}
-
-function toIso(dateStr) {
-  const m = dateStr.match(/(\d{4})[.\s]+(\d{1,2})[.\s]+(\d{1,2})/);
-  if (!m) return dateStr;
-  return `${m[1]}-${m[2].padStart(2,"0")}-${m[3].padStart(2,"0")}`;
-}
-
-function toYearMonth(iso) { return iso.slice(0, 7); }
-
-function fmtMonth(ym) {
-  const [y, m] = ym.split("-");
-  return `${y}년 ${parseInt(m)}월`;
-}
-
-function fmtDisplay(iso) {
-  const [y, mo, d] = iso.split("-");
-  return `${y}. ${parseInt(mo)}. ${parseInt(d)}`;
-}
-
-function getCurrentYearMonth() {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
-}
-
-function buildMonthTabs(data) {
-  const months = [...new Set(data.map(r => toYearMonth(r._iso)))].sort();
-  const container = document.getElementById("monthTabs");
-  container.innerHTML = "";
-
-  if (!activeMonth) {
-    const cur = getCurrentYearMonth();
-    activeMonth = months.includes(cur) ? cur : months[months.length - 1];
-  }
-
-  months.forEach(ym => {
-    const btn = document.createElement("button");
-    btn.className = "month-tab" + (ym === activeMonth ? " active" : "");
-    btn.textContent = fmtMonth(ym);
-    btn.onclick = () => {
-      activeMonth = ym;
-      document.querySelectorAll(".month-tab").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      document.getElementById("dateFilter").value = "";
-      render();
-    };
-    container.appendChild(btn);
-  });
-}
-
-function populateNames(data) {
-  const names = [...new Set(data.map(r => r["이름"]))].sort();
-  const sel = document.getElementById("nameFilter");
-  const cur = sel.value;
-  sel.innerHTML = `<option value="">전체 선수</option>`;
-  names.forEach(n => {
-    const opt = document.createElement("option");
-    opt.value = n; opt.textContent = n;
-    if (n === cur) opt.selected = true;
-    sel.appendChild(opt);
-  });
-}
-
-function renderChart(monthData) {
-  const names = [...new Set(monthData.map(r => r["이름"]))].sort();
-  const totals = {};
-  names.forEach(n => { totals[n] = { 러닝: 0, 수영: 0, 사이클: 0 }; });
-  monthData.forEach(r => {
-    const km = parseFloat(r["Km"] || r["km"]) || 0;
-    if (totals[r["이름"]]) totals[r["이름"]][r["종목"]] += km;
-  });
-
-  const datasets = EVENTS.map(ev => ({
-    label: ev,
-    data: names.map(n => totals[n][ev]),
-    backgroundColor: CHART_COLORS[ev].bg,
-    borderColor: CHART_COLORS[ev].border,
-    borderWidth: 1,
-    borderRadius: 4,
-  }));
-
-  const wrap = document.getElementById("chartWrap");
-  if (names.length === 0) { wrap.style.display = "none"; return; }
-
-  wrap.style.display = "block";
-  document.getElementById("chartTitle").textContent = fmtMonth(activeMonth) + " 선수별 종목 기록";
-
-  if (chartInstance) chartInstance.destroy();
-  chartInstance = new Chart(document.getElementById("myChart"), {
-    type: "bar",
-    data: { labels: names, datasets },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: "top",
-          labels: { font: { family: "'Noto Sans KR', sans-serif", size: 12 }, color: "#6e6b63", boxWidth: 12, boxHeight: 12, borderRadius: 3 }
-        },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} km` } }
-      },
-      scales: {
-        x: { grid: { display: false }, ticks: { font: { family: "'Noto Sans KR', sans-serif", size: 13 }, color: "#1a1916" } },
-        y: {
-          beginAtZero: true,
-          grid: { color: "#e8e5e0" },
-          ticks: { font: { family: "'DM Mono', monospace", size: 11 }, color: "#6e6b63", callback: v => v + " km" }
+      @media (max-width: 520px) {
+        .chart-wrap {
+          padding: 1rem 0.75rem;
+        }
+        .charts-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
         }
       }
-    }
-  });
-}
 
-function render() {
-  const dateVal  = document.getElementById("dateFilter").value;
-  const eventVal = document.getElementById("eventFilter").value;
-  const nameVal  = document.getElementById("nameFilter").value;
+      .table-wrap {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        overflow: hidden;
+      }
 
-  const monthData = allData.filter(r => toYearMonth(r._iso) === activeMonth);
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
 
-  const filtered = monthData.filter(r =>
-    (!dateVal  || r._iso === dateVal) &&
-    (!eventVal || r["종목"] === eventVal) &&
-    (!nameVal  || r["이름"] === nameVal)
-  );
+      thead th {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        text-align: left;
+        padding: 10px 16px;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        font-weight: 400;
+      }
 
-  renderChart(monthData);
+      thead th:last-child {
+        text-align: right;
+      }
 
-  const tbody = document.getElementById("tableBody");
-  tbody.innerHTML = filtered.length === 0
-    ? `<tr class="empty-row"><td colspan="4">조건에 맞는 기록이 없습니다</td></tr>`
-    : filtered.map(r => `
+      tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background 0.1s;
+      }
+      tbody tr:last-child {
+        border-bottom: none;
+      }
+      tbody tr:hover {
+        background: var(--bg);
+      }
+      tbody td {
+        padding: 13px 16px;
+        color: var(--text);
+      }
+      tbody td:last-child {
+        text-align: right;
+        font-family: var(--mono);
+        font-weight: 500;
+      }
+
+      td.date-cell {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--muted);
+      }
+      td.name-cell {
+        font-weight: 500;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        /* color: red; */
+      }
+      .badge-run {
+        background: var(--run);
+        color: var(--run-text);
+        /* color: red !important; */
+      }
+      .badge-swim {
+        background: var(--swim);
+        color: var(--swim-text);
+      }
+      .badge-cycle {
+        background: var(--cycle);
+        color: var(--cycle-text);
+      }
+
+      .empty-row td {
+        text-align: center;
+        padding: 3rem;
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 13px;
+      }
+
+      #status {
+        text-align: center;
+        padding: 3rem;
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .error {
+        color: #a32d2d;
+      }
+
+      footer {
+        max-width: 760px;
+        margin: 2rem auto 0;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .refresh-btn {
+        background: none;
+        border: none;
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 11px;
+        cursor: pointer;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
+      .refresh-btn:hover {
+        color: var(--text);
+      }
+
+      @media (max-width: 520px) {
+        .summary {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .filters {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        select,
+        input[type="date"] {
+          min-width: unset;
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 400px) {
+        table {
+          font-size: 13px;
+        }
+        tbody td {
+          /* padding: 9px 10px; */
+          padding: 13px 10px;
+        }
+        thead th {
+          padding: 10px 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <p class="eyebrow">Training Log</p>
+      <h1>철인 3종 훈련 기록</h1>
+    </header>
+
+    <div class="container">
+      <div class="month-tabs" id="monthTabs"></div>
+
+      <div class="filters" style="display: none">
+        <div class="filter-group">
+          <label>날짜</label>
+          <input type="date" id="dateFilter" />
+        </div>
+        <div class="filter-group">
+          <label>종목</label>
+          <select id="eventFilter">
+            <option value="">전체 종목</option>
+            <option value="러닝">러닝</option>
+            <option value="수영">수영</option>
+            <option value="사이클">사이클</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>이름</label>
+          <select id="nameFilter">
+            <option value="">전체 선수</option>
+          </select>
+        </div>
+        <div class="filter-group" style="justify-content: flex-end">
+          <label style="visibility: hidden">_</label>
+          <button class="reset-btn" onclick="resetFilters()">초기화</button>
+        </div>
+      </div>
+
+      <div class="summary">
+        <div class="stat">
+          <div class="stat-label">결과</div>
+          <div class="stat-value" id="countStat">—</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">총 거리</div>
+          <div class="stat-value" id="kmStat">—</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">참여 선수</div>
+          <div class="stat-value" id="peopleStat">—</div>
+        </div>
+      </div>
+
+      <div class="chart-wrap" id="chartWrap" style="display: none">
+        <div class="chart-title" id="chartTitle"></div>
+        <div class="chart-legend">
+          <div class="legend-item">
+            <span class="legend-dot" style="background: #378add"></span> 러닝
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot" style="background: #ef9f27"></span> 수영
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot" style="background: #1d9e75"></span> 사이클
+          </div>
+        </div>
+        <div class="charts-grid" id="chartsGrid"></div>
+      </div>
+
+      <div id="status">데이터 불러오는 중...</div>
+
+      <div class="table-wrap" id="tableWrap" style="display: none">
+        <table>
+          <thead>
+            <tr>
+              <th>날짜</th>
+              <th>이름</th>
+              <th>종목</th>
+              <th>거리 (km)</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer>
+      <span id="last-updated"></span>
+      <button class="refresh-btn" onclick="loadData()">↻ 새로고침</button>
+    </footer>
+
+    <script>
+      const SHEET_ID = "1r2EkFYMBs757KpigAcIUFo_tXo65pINyutEdxG_OylM";
+      const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+
+      const badgeClass = {
+        러닝: "badge-run",
+        수영: "badge-swim",
+        사이클: "badge-cycle",
+      };
+      const EVENTS = ["러닝", "수영", "사이클"];
+      const CHART_COLORS = {
+        러닝: { bg: "#378ADD", border: "#185FA5" },
+        수영: { bg: "#EF9F27", border: "#BA7517" },
+        사이클: { bg: "#1D9E75", border: "#0F6E56" },
+      };
+
+      let allData = [];
+      let activeMonth = null;
+
+      function parseCSV(text) {
+        const lines = text.trim().split("\n");
+        const headers = lines[0]
+          .split(",")
+          .map((h) => h.trim().replace(/^"|"$/g, ""));
+        return lines
+          .slice(1)
+          .map((line) => {
+            const cols = line.match(/(".*?"|[^,]+)(?=,|$)/g) || [];
+            const row = {};
+            headers.forEach((h, i) => {
+              row[h] = (cols[i] || "").trim().replace(/^"|"$/g, "");
+            });
+            return row;
+          })
+          .filter((r) => r["날짜"] && r["이름"] && r["종목"]);
+      }
+
+      function toIso(dateStr) {
+        const m = dateStr.match(/(\d{4})[.\s]+(\d{1,2})[.\s]+(\d{1,2})/);
+        if (!m) return dateStr;
+        return `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}`;
+      }
+
+      function toYearMonth(iso) {
+        return iso.slice(0, 7);
+      }
+
+      function fmtMonth(ym) {
+        const [y, m] = ym.split("-");
+        return `${y}년 ${parseInt(m)}월`;
+      }
+
+      function fmtDisplay(iso) {
+        const [y, mo, d] = iso.split("-");
+        return `${y}. ${parseInt(mo)}. ${parseInt(d)}`;
+      }
+
+      function getCurrentYearMonth() {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+      }
+
+      function buildMonthTabs(data) {
+        const months = [
+          ...new Set(data.map((r) => toYearMonth(r._iso))),
+        ].sort();
+        const container = document.getElementById("monthTabs");
+        container.innerHTML = "";
+
+        if (!activeMonth) {
+          const cur = getCurrentYearMonth();
+          activeMonth = months.includes(cur) ? cur : months[months.length - 1];
+        }
+
+        months.forEach((ym) => {
+          const btn = document.createElement("button");
+          btn.className = "month-tab" + (ym === activeMonth ? " active" : "");
+          btn.textContent = fmtMonth(ym);
+          btn.onclick = () => {
+            activeMonth = ym;
+            document
+              .querySelectorAll(".month-tab")
+              .forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+            document.getElementById("dateFilter").value = "";
+            render();
+          };
+          container.appendChild(btn);
+        });
+      }
+
+      function populateNames(data) {
+        const names = [...new Set(data.map((r) => r["이름"]))].sort();
+        const sel = document.getElementById("nameFilter");
+        const cur = sel.value;
+        sel.innerHTML = `<option value="">전체 선수</option>`;
+        names.forEach((n) => {
+          const opt = document.createElement("option");
+          opt.value = n;
+          opt.textContent = n;
+          if (n === cur) opt.selected = true;
+          sel.appendChild(opt);
+        });
+      }
+
+      function renderChart(monthData) {
+        const names = [...new Set(monthData.map((r) => r["이름"]))].sort();
+        const totals = {};
+        names.forEach((n) => {
+          totals[n] = { 러닝: 0, 수영: 0, 사이클: 0 };
+        });
+        monthData.forEach((r) => {
+          const km = parseFloat(r["Km"] || r["km"]) || 0;
+          if (totals[r["이름"]]) totals[r["이름"]][r["종목"]] += km;
+        });
+
+        const wrap = document.getElementById("chartWrap");
+        const grid = document.getElementById("chartsGrid");
+        grid.innerHTML = "";
+
+        if (names.length === 0) {
+          wrap.style.display = "none";
+          return;
+        }
+
+        wrap.style.display = "block";
+        document.getElementById("chartTitle").textContent =
+          fmtMonth(activeMonth) + " 선수별 종목 기록";
+
+        const cols = window.innerWidth <= 520 ? 2 : 3;
+
+        // SVG dimensions (viewBox 기준)
+        const VW = 220,
+          VH = 150;
+        const MT = 8,
+          MR = 8,
+          MB = 8;
+        const ML_WIDE = 46,
+          ML_NARROW = 4;
+
+        const Y_MAX = 100;
+        const yTicks = [0, 25, 50, 75, 100];
+        const yScale = d3
+          .scaleLinear()
+          .domain([0, Y_MAX])
+          .range([VH - MT - MB, 0]);
+
+        names.forEach((name, idx) => {
+          const isFirstInRow = idx % cols === 0;
+          const ML = isFirstInRow ? ML_WIDE : ML_NARROW;
+          const innerW = VW - ML - MR;
+          const innerH = VH - MT - MB;
+
+          const xScale = d3
+            .scaleBand()
+            .domain(EVENTS)
+            .range([0, innerW])
+            .padding(0.3);
+
+          const card = document.createElement("div");
+          card.className = "athlete-chart-wrap";
+
+          const svg = d3
+            .select(card)
+            .append("svg")
+            .attr("viewBox", `0 0 ${VW} ${VH}`)
+            .attr("preserveAspectRatio", "xMidYMid meet");
+
+          // clip path으로 바가 차트 영역 밖으로 나가지 않도록
+          const clipId = `clip-${idx}`;
+          svg
+            .append("defs")
+            .append("clipPath")
+            .attr("id", clipId)
+            .append("rect")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", innerW)
+            .attr("height", innerH);
+
+          const g = svg.append("g").attr("transform", `translate(${ML},${MT})`);
+
+          // 수평 그리드 라인
+          g.selectAll(".grid-line")
+            .data(yTicks)
+            .join("line")
+            .attr("class", "grid-line")
+            .attr("x1", 0)
+            .attr("x2", innerW)
+            .attr("y1", (d) => yScale(d))
+            .attr("y2", (d) => yScale(d))
+            .attr("stroke", (d) => (d === 0 ? "#b0ada6" : "#e8e5e0"))
+            .attr("stroke-width", 1);
+
+          // Y축 레이블 (첫 번째 열만)
+          if (isFirstInRow) {
+            g.selectAll(".y-label")
+              .data(yTicks)
+              .join("text")
+              .attr("class", "y-label")
+              .attr("x", -6)
+              .attr("y", (d) => yScale(d))
+              .attr("dy", "0.32em")
+              .attr("text-anchor", "end")
+              .style("font-family", "'DM Mono', monospace")
+              .style("font-size", "11px")
+              .style("fill", "#6e6b63")
+              .text((d) => (d === 0 ? "0" : d + " km"));
+          }
+
+          // 바 (애니메이션: height 0 → 실제값)
+          const barGroup = g.append("g").attr("clip-path", `url(#${clipId})`);
+
+          EVENTS.forEach((ev) => {
+            const val = Math.min(totals[name][ev], Y_MAX);
+            const targetH = innerH - yScale(val);
+
+            barGroup
+              .append("rect")
+              .attr("x", xScale(ev))
+              .attr("y", innerH)
+              .attr("width", xScale.bandwidth())
+              .attr("height", 0)
+              .attr("fill", CHART_COLORS[ev].bg)
+              .attr("stroke", CHART_COLORS[ev].border)
+              .attr("stroke-width", 1)
+              .attr("rx", 2)
+              .append("title")
+              .text(`${ev}: ${totals[name][ev].toFixed(1)} km`);
+          });
+
+          // DOM에 추가한 뒤 transition 실행
+          grid.appendChild(card);
+
+          barGroup
+            .selectAll("rect")
+            .data(EVENTS)
+            .transition()
+            .duration(600)
+            .delay((_, i) => i * 80)
+            .ease(d3.easeCubicOut)
+            .attr("y", (ev) => yScale(Math.min(totals[name][ev], Y_MAX)))
+            .attr(
+              "height",
+              (ev) => innerH - yScale(Math.min(totals[name][ev], Y_MAX)),
+            );
+
+          // 선수 이름
+          const nameEl = document.createElement("div");
+          nameEl.className = "athlete-name";
+          nameEl.textContent = name;
+          card.appendChild(nameEl);
+        });
+      }
+
+      function render() {
+        const dateVal = document.getElementById("dateFilter").value;
+        const eventVal = document.getElementById("eventFilter").value;
+        const nameVal = document.getElementById("nameFilter").value;
+
+        const monthData = allData.filter(
+          (r) => toYearMonth(r._iso) === activeMonth,
+        );
+
+        const filtered = monthData.filter(
+          (r) =>
+            (!dateVal || r._iso === dateVal) &&
+            (!eventVal || r["종목"] === eventVal) &&
+            (!nameVal || r["이름"] === nameVal),
+        );
+
+        renderChart(monthData);
+
+        const tbody = document.getElementById("tableBody");
+        tbody.innerHTML =
+          filtered.length === 0
+            ? `<tr class="empty-row"><td colspan="4">조건에 맞는 기록이 없습니다</td></tr>`
+            : filtered
+                .map(
+                  (r) => `
         <tr>
           <td class="date-cell">${fmtDisplay(r._iso)}</td>
           <td class="name-cell">${r["이름"]}</td>
           <td><span class="badge ${badgeClass[r["종목"]] || ""}">${r["종목"]}</span></td>
           <td>${r["Km"] || r["km"] || "—"}</td>
-        </tr>`).join("");
+        </tr>`,
+                )
+                .join("");
 
-  const totalKm = filtered.reduce((s, r) => s + (parseFloat(r["Km"] || r["km"]) || 0), 0);
-  document.getElementById("countStat").textContent  = filtered.length + "건";
-  document.getElementById("kmStat").textContent     = totalKm + " km";
-  document.getElementById("peopleStat").textContent = new Set(filtered.map(r => r["이름"])).size + "명";
-}
+        const totalKm = filtered.reduce(
+          (s, r) => s + (parseFloat(r["Km"] || r["km"]) || 0),
+          0,
+        );
+        document.getElementById("countStat").textContent =
+          filtered.length + "건";
+        document.getElementById("kmStat").textContent = totalKm + " km";
+        document.getElementById("peopleStat").textContent =
+          new Set(filtered.map((r) => r["이름"])).size + "명";
+      }
 
-async function loadData() {
-  document.getElementById("status").textContent = "데이터 불러오는 중...";
-  document.getElementById("status").style.display = "block";
-  document.getElementById("status").className = "";
-  document.getElementById("tableWrap").style.display = "none";
-  document.getElementById("chartWrap").style.display = "none";
+      async function loadData() {
+        document.getElementById("status").textContent = "데이터 불러오는 중...";
+        document.getElementById("status").style.display = "block";
+        document.getElementById("status").className = "";
+        document.getElementById("tableWrap").style.display = "none";
+        document.getElementById("chartWrap").style.display = "none";
 
-  try {
-    const res = await fetch(CSV_URL);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const text = await res.text();
-    const rows = parseCSV(text);
-    allData = rows.map(r => ({ ...r, _iso: toIso(r["날짜"]) }));
+        try {
+          const res = await fetch(CSV_URL);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const text = await res.text();
+          const rows = parseCSV(text);
+          allData = rows.map((r) => ({ ...r, _iso: toIso(r["날짜"]) }));
 
-    populateNames(allData);
-    buildMonthTabs(allData);
+          populateNames(allData);
+          buildMonthTabs(allData);
 
-    document.getElementById("status").style.display = "none";
-    document.getElementById("tableWrap").style.display = "block";
-    render();
+          document.getElementById("status").style.display = "none";
+          document.getElementById("tableWrap").style.display = "block";
+          render();
 
-    const now = new Date();
-    document.getElementById("last-updated").textContent = `마지막 업데이트: ${now.toLocaleTimeString("ko-KR")}`;
-  } catch (e) {
-    document.getElementById("status").textContent =
-      "데이터 불러오기 실패. 시트가 공개 설정인지 확인해주세요. (" + e.message + ")";
-    document.getElementById("status").className = "error";
-  }
-}
+          const now = new Date();
+          document.getElementById("last-updated").textContent =
+            `마지막 업데이트: ${now.toLocaleTimeString("ko-KR")}`;
+        } catch (e) {
+          document.getElementById("status").textContent =
+            "데이터 불러오기 실패. 시트가 공개 설정인지 확인해주세요. (" +
+            e.message +
+            ")";
+          document.getElementById("status").className = "error";
+        }
+      }
 
-function resetFilters() {
-  document.getElementById("dateFilter").value  = "";
-  document.getElementById("eventFilter").value = "";
-  document.getElementById("nameFilter").value  = "";
-  render();
-}
+      function resetFilters() {
+        document.getElementById("dateFilter").value = "";
+        document.getElementById("eventFilter").value = "";
+        document.getElementById("nameFilter").value = "";
+        render();
+      }
 
-document.getElementById("dateFilter").addEventListener("change", render);
-document.getElementById("eventFilter").addEventListener("change", render);
-document.getElementById("nameFilter").addEventListener("change", render);
+      document.getElementById("dateFilter").addEventListener("change", render);
+      document.getElementById("eventFilter").addEventListener("change", render);
+      document.getElementById("nameFilter").addEventListener("change", render);
 
-loadData();
-</script>
-</body>
+      let resizeTimer;
+      let lastCols = window.innerWidth <= 520 ? 2 : 3;
+      window.addEventListener("resize", () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          const newCols = window.innerWidth <= 520 ? 2 : 3;
+          if (newCols !== lastCols) {
+            lastCols = newCols;
+            render();
+          }
+        }, 200);
+      });
+
+      loadData();
+    </script>
+  </body>
 </html>
