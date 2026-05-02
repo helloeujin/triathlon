@@ -339,6 +339,9 @@
         font-family: var(--mono);
         font-size: 13px;
         color: var(--muted);
+        @media (max-width: 520px) {
+          font-size: 12px;
+        }
       }
       td.name-cell {
         font-weight: 500;
@@ -438,9 +441,24 @@
           padding: 10px 10px;
         }
       }
+      #tooltip {
+        position: fixed;
+        background: var(--text);
+        color: #fff;
+        font-family: var(--mono);
+        font-size: 12px;
+        padding: 5px 9px;
+        border-radius: 4px;
+        pointer-events: none;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.1s;
+        z-index: 100;
+      }
     </style>
   </head>
   <body>
+    <div id="tooltip"></div>
     <header>
       <p class="eyebrow">Training Log</p>
       <h1>철인 3종 훈련 기록</h1>
@@ -668,7 +686,8 @@
         const ML_WIDE = 46,
           ML_NARROW = 4;
 
-        const maxVal = d3.max(names, (n) => d3.max(EVENTS, (ev) => totals[n][ev])) || 0;
+        const maxVal =
+          d3.max(names, (n) => d3.max(EVENTS, (ev) => totals[n][ev])) || 0;
         const Y_MAX = Math.max(25, Math.ceil(maxVal / 25) * 25);
         const yTicks = d3.range(0, Y_MAX + 1, 25);
         const yScale = d3
@@ -734,13 +753,16 @@
               .attr("dy", "0.32em")
               .attr("text-anchor", "end")
               .style("font-family", "'DM Mono', monospace")
-              .style("font-size", "11px")
+              // .style("font-size", "12px")
+              .style("font-size", window.innerWidth < 520 ? "13.5px" : "11px")
               .style("fill", "#6e6b63")
               .text((d) => (d === 0 ? "0" : d + " km"));
           }
 
           // 바 (애니메이션: height 0 → 실제값)
           const barGroup = g.append("g").attr("clip-path", `url(#${clipId})`);
+
+          const tip = document.getElementById("tooltip");
 
           EVENTS.forEach((ev) => {
             const val = Math.min(totals[name][ev], Y_MAX);
@@ -756,8 +778,19 @@
               .attr("stroke", CHART_COLORS[ev].border)
               .attr("stroke-width", 1)
               .attr("rx", 2)
-              .append("title")
-              .text(`${ev}: ${totals[name][ev].toFixed(1)} km`);
+              .on("mousemove", (event) => {
+                tip.textContent = `${ev}  ${totals[name][ev].toFixed(1)} km`;
+                tip.style.opacity = 1;
+                const tipW = tip.offsetWidth;
+                const overRight = event.clientX + 12 + tipW > window.innerWidth;
+                tip.style.left = overRight
+                  ? event.clientX - tipW - 8 + "px"
+                  : event.clientX + 12 + "px";
+                tip.style.top = event.clientY - 28 + "px";
+              })
+              .on("mouseleave", () => {
+                tip.style.opacity = 0;
+              });
           });
 
           // DOM에 추가한 뒤 transition 실행
