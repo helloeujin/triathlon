@@ -688,8 +688,12 @@
 
         const maxVal =
           d3.max(names, (n) => d3.max(EVENTS, (ev) => totals[n][ev])) || 0;
-        const Y_MAX = Math.max(25, Math.ceil(maxVal / 25) * 25);
-        const yTicks = d3.range(0, Y_MAX + 1, 25);
+        const tempScale = d3
+          .scaleLinear()
+          .domain([0, maxVal || 1])
+          .nice();
+        const Y_MAX = tempScale.domain()[1];
+        const yTicks = tempScale.ticks(6);
         const yScale = d3
           .scaleLinear()
           .domain([0, Y_MAX])
