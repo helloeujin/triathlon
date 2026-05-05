@@ -268,7 +268,7 @@
 
       .athlete-name {
         font-family: var(--sans);
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 500;
         color: var(--text);
         text-align: center;
@@ -300,7 +300,7 @@
 
       thead th {
         font-family: var(--mono);
-        font-size: 11px;
+        font-size: 12px;
         letter-spacing: 0.08em;
         text-transform: uppercase;
         color: var(--muted);
@@ -313,6 +313,31 @@
 
       thead th:last-child {
         text-align: right;
+      }
+
+      th.sortable {
+        cursor: pointer;
+        user-select: none;
+      }
+      th.sortable:hover {
+        color: var(--text);
+      }
+      th.sortable::after {
+        content: " ▾";
+        font-size: 15px;
+        opacity: 0.3;
+      }
+      th.sort-asc::after {
+        content: " ↑";
+        font-size: 15px;
+        opacity: 1;
+        color: var(--text);
+      }
+      th.sort-desc::after {
+        content: " ↓";
+        font-size: 15px;
+        opacity: 1;
+        color: var(--text);
       }
 
       tbody tr {
@@ -512,13 +537,25 @@
         <div class="chart-title" id="chartTitle"></div>
         <div class="chart-legend">
           <div class="legend-item">
-            <span class="legend-dot" style="background: #378add"></span> 러닝
+            <span
+              class="legend-dot"
+              style="background: #378add; border: 1px solid #185fa5"
+            ></span>
+            러닝
           </div>
           <div class="legend-item">
-            <span class="legend-dot" style="background: #ef9f27"></span> 수영
+            <span
+              class="legend-dot"
+              style="background: #ef9f27; border: 1px solid #ba7517"
+            ></span>
+            수영
           </div>
           <div class="legend-item">
-            <span class="legend-dot" style="background: #1d9e75"></span> 사이클
+            <span
+              class="legend-dot"
+              style="background: #1d9e75; border: 1px solid #0f6e56"
+            ></span>
+            사이클
           </div>
         </div>
         <div class="charts-grid" id="chartsGrid"></div>
@@ -530,10 +567,10 @@
         <table>
           <thead>
             <tr>
-              <th>날짜</th>
-              <th>이름</th>
-              <th>종목</th>
-              <th>거리 (km)</th>
+              <th class="sortable" data-sort="date">날짜</th>
+              <th class="sortable" data-sort="name">이름</th>
+              <th class="sortable" data-sort="event">종목</th>
+              <th class="sortable" data-sort="km">거리 (km)</th>
             </tr>
           </thead>
           <tbody id="tableBody"></tbody>
@@ -564,6 +601,8 @@
 
       let allData = [];
       let activeMonth = null;
+      let sortKey = "date";
+      let sortDir = "desc";
 
       function parseCSV(text) {
         const lines = text.trim().split("\n");
@@ -651,6 +690,26 @@
         });
       }
 
+      function niceLogTicks(maxVal, maxTicks = 4) {
+        const candidates = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000].filter(
+          (v) => v <= maxVal,
+        );
+        if (candidates.length <= maxTicks) return candidates;
+        const logMax = Math.log10(maxVal);
+        const result = [];
+        for (let i = 0; i < maxTicks; i++) {
+          const targetLog = (i / (maxTicks - 1)) * logMax;
+          const nearest = candidates.reduce((best, c) =>
+            Math.abs(Math.log10(c) - targetLog) <
+            Math.abs(Math.log10(best) - targetLog)
+              ? c
+              : best,
+          );
+          if (!result.includes(nearest)) result.push(nearest);
+        }
+        return result.sort((a, b) => a - b);
+      }
+
       function renderChart(monthData) {
         const names = [...new Set(monthData.map((r) => r["이름"]))].sort();
         const totals = {};
@@ -687,17 +746,15 @@
           ML_NARROW = 4;
 
         const maxVal =
-          d3.max(names, (n) => d3.max(EVENTS, (ev) => totals[n][ev])) || 0;
-        const tempScale = d3
-          .scaleLinear()
-          .domain([0, maxVal || 1])
-          .nice();
-        const Y_MAX = tempScale.domain()[1];
-        const yTicks = tempScale.ticks(6);
+          d3.max(names, (n) => d3.max(EVENTS, (ev) => totals[n][ev])) || 1;
+        const LOG_MIN = 0.5;
         const yScale = d3
-          .scaleLinear()
-          .domain([0, Y_MAX])
-          .range([VH - MT - MB, 0]);
+          .scaleLog()
+          .domain([LOG_MIN, Math.max(maxVal * 1.15, 1)])
+          .range([VH - MT - MB, 0])
+          .clamp(true);
+        const Y_MAX = yScale.domain()[1];
+        const yTicks = niceLogTicks(Y_MAX, 4);
 
         names.forEach((name, idx) => {
           const isFirstInRow = idx % cols === 0;
@@ -734,6 +791,15 @@
 
           const g = svg.append("g").attr("transform", `translate(${ML},${MT})`);
 
+          // zero baseline
+          g.append("line")
+            .attr("x1", 0)
+            .attr("x2", innerW)
+            .attr("y1", innerH)
+            .attr("y2", innerH)
+            .attr("stroke", "#b0ada6")
+            .attr("stroke-width", 1);
+
           // 수평 그리드 라인
           g.selectAll(".grid-line")
             .data(yTicks)
@@ -743,7 +809,7 @@
             .attr("x2", innerW)
             .attr("y1", (d) => yScale(d))
             .attr("y2", (d) => yScale(d))
-            .attr("stroke", (d) => (d === 0 ? "#b0ada6" : "#e8e5e0"))
+            .attr("stroke", "#e8e5e0")
             .attr("stroke-width", 1);
 
           // Y축 레이블 (첫 번째 열만)
@@ -758,9 +824,9 @@
               .attr("text-anchor", "end")
               .style("font-family", "'DM Mono', monospace")
               // .style("font-size", "12px")
-              .style("font-size", window.innerWidth < 520 ? "13.5px" : "11px")
+              .style("font-size", window.innerWidth < 520 ? "11px" : "11px")
               .style("fill", "#6e6b63")
-              .text((d) => (d === 0 ? "0" : d + " km"));
+              .text((d) => d + " km");
           }
 
           // 바 (애니메이션: height 0 → 실제값)
@@ -797,6 +863,25 @@
               });
           });
 
+          // 바 위 value 레이블
+          const labelGroup = g.append("g");
+          EVENTS.forEach((ev) => {
+            const v = totals[name][ev];
+            labelGroup
+              .append("text")
+              .attr("x", xScale(ev) + xScale.bandwidth() / 2)
+              .attr("y", innerH)
+              .attr("text-anchor", "middle")
+              .attr("opacity", 0)
+              .style("font-family", "'DM Mono', monospace")
+              // .style("font-weight", "bold")
+              .style("font-size", "11.5px")
+              // .style("font-size", window.innerWidth < 520 ? "11.5px" : "11px")
+              .style("fill", CHART_COLORS[ev].border)
+              // .style("fill", "#666")
+              .text(v > 0 ? (Number.isInteger(v) ? v : v.toFixed(1)) : "");
+          });
+
           // DOM에 추가한 뒤 transition 실행
           grid.appendChild(card);
 
@@ -807,11 +892,26 @@
             .duration(600)
             .delay((_, i) => i * 80)
             .ease(d3.easeCubicOut)
-            .attr("y", (ev) => yScale(Math.min(totals[name][ev], Y_MAX)))
-            .attr(
-              "height",
-              (ev) => innerH - yScale(Math.min(totals[name][ev], Y_MAX)),
-            );
+            .attr("y", (ev) => {
+              const v = totals[name][ev];
+              return v > 0 ? yScale(Math.min(v, Y_MAX)) : innerH;
+            })
+            .attr("height", (ev) => {
+              const v = totals[name][ev];
+              return v > 0 ? innerH - yScale(Math.min(v, Y_MAX)) : 0;
+            });
+
+          labelGroup
+            .selectAll("text")
+            .data(EVENTS)
+            .transition()
+            .duration(300)
+            .delay((_, i) => i * 80 + 450)
+            .attr("y", (ev) => {
+              const v = totals[name][ev];
+              return v > 0 ? yScale(Math.min(v, Y_MAX)) - 3 : innerH;
+            })
+            .attr("opacity", (ev) => (totals[name][ev] > 0 ? 1 : 0));
 
           // 선수 이름
           const nameEl = document.createElement("div");
@@ -839,11 +939,28 @@
 
         renderChart(monthData);
 
+        const sortedFiltered = [...filtered].sort((a, b) => {
+          let va, vb;
+          if (sortKey === "date") { va = a._iso; vb = b._iso; }
+          else if (sortKey === "name") { va = a["이름"]; vb = b["이름"]; }
+          else if (sortKey === "event") { va = a["종목"]; vb = b["종목"]; }
+          else { va = parseFloat(a["Km"] || a["km"]) || 0; vb = parseFloat(b["Km"] || b["km"]) || 0; }
+          if (va < vb) return sortDir === "asc" ? -1 : 1;
+          if (va > vb) return sortDir === "asc" ? 1 : -1;
+          return 0;
+        });
+
+        document.querySelectorAll("th[data-sort]").forEach((th) => {
+          th.classList.remove("sort-asc", "sort-desc");
+          if (th.dataset.sort === sortKey)
+            th.classList.add(sortDir === "asc" ? "sort-asc" : "sort-desc");
+        });
+
         const tbody = document.getElementById("tableBody");
         tbody.innerHTML =
-          filtered.length === 0
+          sortedFiltered.length === 0
             ? `<tr class="empty-row"><td colspan="4">조건에 맞는 기록이 없습니다</td></tr>`
-            : filtered
+            : sortedFiltered
                 .map(
                   (r) => `
         <tr>
@@ -921,6 +1038,19 @@
             render();
           }
         }, 200);
+      });
+
+      document.querySelectorAll("th[data-sort]").forEach((th) => {
+        th.addEventListener("click", () => {
+          const key = th.dataset.sort;
+          if (sortKey === key) {
+            sortDir = sortDir === "asc" ? "desc" : "asc";
+          } else {
+            sortKey = key;
+            sortDir = key === "km" ? "desc" : "asc";
+          }
+          render();
+        });
       });
 
       loadData();
