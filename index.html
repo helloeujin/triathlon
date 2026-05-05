@@ -824,7 +824,7 @@
               .attr("text-anchor", "end")
               .style("font-family", "'DM Mono', monospace")
               // .style("font-size", "12px")
-              .style("font-size", window.innerWidth < 520 ? "11px" : "11px")
+              .style("font-size", window.innerWidth < 520 ? "12px" : "11px")
               .style("fill", "#6e6b63")
               .text((d) => d + " km");
           }
@@ -875,8 +875,8 @@
               .attr("opacity", 0)
               .style("font-family", "'DM Mono', monospace")
               // .style("font-weight", "bold")
-              .style("font-size", "11.5px")
-              // .style("font-size", window.innerWidth < 520 ? "11.5px" : "11px")
+              // .style("font-size", "11.5px")
+              .style("font-size", window.innerWidth < 520 ? "12px" : "11px")
               .style("fill", CHART_COLORS[ev].border)
               // .style("fill", "#666")
               .text(v > 0 ? (Number.isInteger(v) ? v : v.toFixed(1)) : "");
@@ -941,10 +941,19 @@
 
         const sortedFiltered = [...filtered].sort((a, b) => {
           let va, vb;
-          if (sortKey === "date") { va = a._iso; vb = b._iso; }
-          else if (sortKey === "name") { va = a["이름"]; vb = b["이름"]; }
-          else if (sortKey === "event") { va = a["종목"]; vb = b["종목"]; }
-          else { va = parseFloat(a["Km"] || a["km"]) || 0; vb = parseFloat(b["Km"] || b["km"]) || 0; }
+          if (sortKey === "date") {
+            va = a._iso;
+            vb = b._iso;
+          } else if (sortKey === "name") {
+            va = a["이름"];
+            vb = b["이름"];
+          } else if (sortKey === "event") {
+            va = a["종목"];
+            vb = b["종목"];
+          } else {
+            va = parseFloat(a["Km"] || a["km"]) || 0;
+            vb = parseFloat(b["Km"] || b["km"]) || 0;
+          }
           if (va < vb) return sortDir === "asc" ? -1 : 1;
           if (va > vb) return sortDir === "asc" ? 1 : -1;
           return 0;
