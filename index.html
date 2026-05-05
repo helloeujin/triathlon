@@ -252,7 +252,7 @@
 
       .charts-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: auto 1fr 1fr;
         gap: 16px;
       }
 
@@ -272,6 +272,10 @@
         color: var(--text);
         text-align: center;
         margin-top: 6px;
+
+        @media (max-width: 520px) {
+          font-size: 13.5px;
+        }
       }
 
       @media (max-width: 520px) {
@@ -279,7 +283,7 @@
           padding: 1rem 0.75rem;
         }
         .charts-grid {
-          grid-template-columns: repeat(2, 1fr);
+          grid-template-columns: auto 1fr;
           gap: 12px;
         }
       }
@@ -737,14 +741,18 @@
 
         const gridGap = window.innerWidth <= 520 ? 12 : 16;
         const containerW = grid.getBoundingClientRect().width;
-        const cardW = Math.floor((containerW - gridGap * (cols - 1)) / cols);
-        const cardH = Math.round(cardW * 150 / 220);
 
         const MT = 8,
           MR = 8,
           MB = 8;
         const ML_WIDE = 46,
           ML_NARROW = 4;
+
+        // 모든 카드가 동일한 innerW를 갖도록 역산
+        const innerW = Math.floor(
+          (containerW - ML_WIDE - (cols - 1) * ML_NARROW - cols * MR - (cols - 1) * gridGap) / cols
+        );
+        const cardH = Math.round(((innerW + ML_WIDE + MR) * 150) / 220);
         const innerH = cardH - MT - MB;
 
         const maxVal =
@@ -761,7 +769,7 @@
         names.forEach((name, idx) => {
           const isFirstInRow = idx % cols === 0;
           const ML = isFirstInRow ? ML_WIDE : ML_NARROW;
-          const innerW = cardW - ML - MR;
+          const cardW = innerW + ML + MR;
 
           const xScale = d3
             .scaleBand()
@@ -824,7 +832,7 @@
               .attr("dy", "0.32em")
               .attr("text-anchor", "end")
               .style("font-family", "'DM Mono', monospace")
-              .style("font-size", "11px")
+              .style("font-size", window.innerWidth <= 520 ? "10px" : "11px")
               .style("fill", "#6e6b63")
               .text((d) => d + " km");
           }
